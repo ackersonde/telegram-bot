@@ -19,7 +19,7 @@ func main() {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	_, err = bot.SetWebhook(tgbotapi.NewWebhook(
-		"https://" + os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token))
+		os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token))
 	if err != nil {
 		log.Fatal(err)
 	}
