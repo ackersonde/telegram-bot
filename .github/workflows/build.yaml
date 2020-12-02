@@ -2,7 +2,7 @@ name: Deploy telegram bot
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       ca_pub_fingerprint:
