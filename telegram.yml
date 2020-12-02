@@ -1,0 +1,136 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: telegram-bot
+spec:
+  ports:
+    - name: telegram-bot
+      port: 3000
+      protocol: TCP
+  selector:
+    app: telegram-bot
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: default
+  name: telegram-bot
+  labels:
+    app: telegram-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telegram-bot
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: telegram-bot
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerhub
+      nodeSelector:
+        traefik: proxy
+      containers:
+        - name: telegram-bot
+          image: danackerson/telegram-bot:vg{{GITHUB_RUN_ID}}
+          ports:
+            - name: telegram-bot
+              containerPort: 3000
+          envFrom:
+          - secretRef:
+              name: telegram-bot-env-secrets
+          volumeMounts:
+          # https://www.jannikarndt.de/blog/2018/03/ssh_key_as_kubernetes_secret/
+          - name: ssh-key-volume
+            readOnly: true
+            mountPath: "/root/.ssh/id_ed25519"
+            subPath: id_ed25519
+          - name: ssh-cacert-volume
+            mountPath: "/root/.ssh/id_ed25519-cert.pub"
+            subPath: id_ed25519-cert.pub
+          - name: scp-pops4xl-key-volume
+            readOnly: true
+            mountPath: "/root/.ssh/id_rsa_pix4x"
+            subPath: id_rsa_pix4x
+      volumes:
+      - name: ssh-key-volume
+        secret:
+          secretName: server-deploy-key-secret
+          defaultMode: 256
+      - name: ssh-cacert-volume
+        secret:
+          secretName: server-cacert-secret
+          defaultMode: 256
+      - name: scp-pops4xl-key-volume
+        secret:
+          secretName: scp-pops4xl-key-secret
+          defaultMode: 256
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telegram-bot-env-secrets
+data:
+  GITHUB_RUN_ID: {{GITHUB_RUN_ID_B64}}
+  CTX_PLEX_TOKEN: {{CTX_PLEX_TOKEN_B64}}
+  CTX_DIGITALOCEAN_TOKEN: {{CTX_DIGITALOCEAN_TOKEN_B64}}
+  CTX_JOIN_API_KEY: {{CTX_JOIN_API_KEY_B64}}
+  CTX_DROPBOX_ACCESS_TOKEN: {{CTX_DROPBOX_ACCESS_TOKEN_B64}}
+  CTX_ETHERSCAN_API_KEY: {{CTX_ETHERSCAN_API_KEY_B64}}
+  CTX_ETHEREUM_ADDRESS_METAMASK: {{CTX_ETHEREUM_ADDRESS_METAMASK_B64}}
+  CTX_CURRENT_PGP_FINGERPRINT: {{CTX_CURRENT_PGP_FINGERPRINT_B64}}
+  CTX_STELLAR_LUMENS_ADDRESS: {{CTX_STELLAR_LUMENS_ADDRESS_B64}}
+  CTX_VPNC_GATEWAY: {{CTX_VPNC_GATEWAY_B64}}
+  CTX_TELEGRAM_BOT_TOKEN: {{CTX_TELEGRAM_BOT_TOKEN_B64}}
+  TELEGRAM_BOT_WEB_URL: {{TELEGRAM_BOT_WEB_URL_B64}}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: server-deploy-key-secret
+data:
+  id_ed25519: {{CTX_SERVER_DEPLOY_SECRET_B64}}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: server-cacert-secret
+data:
+  id_ed25519-cert.pub: {{CTX_SERVER_DEPLOY_CACERT_B64}}
+
+---
+# https://superuser.com/questions/120796/how-to-encode-base64-via-command-line#comment280484_120815
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scp-pops4xl-key-secret
+data:
+  id_rsa_pix4x: {{CTX_POPS4XL_SCP_KEY_SECRET_B64}}
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: telegram-bot-ingress
+  namespace: default
+spec:
+  entryPoints:
+    - web
+    - secure
+  routes:
+  - match: Host(`{{TELEGRAM_BOT_WEB_URL}}`)
+    middlewares:
+    - name: tls-redirect
+    - name: careful-ratelimit
+    kind: Rule
+    services:
+    - name: telegram-bot
+      port: 3000
