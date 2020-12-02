@@ -81,7 +81,7 @@ jobs:
 
           sed -i -e "s@{{TELEGRAM_BOT_WEB_URL}}@${{ secrets.TELEGRAM_BOT_WEB_URL }}@" telegram.yml
           sed -i -e "s@{{TELEGRAM_BOT_WEB_URL_B64}}@$TELEGRAM_BOT_WEB_URL_B64@" telegram.yml
-          sed -i -e "s@{{CTX_TELEGRAM_BOT_TOKEN}}@$CTX_TELEGRAM_BOT_TOKEN_B64@" telegram.yml
+          sed -i -e "s@{{CTX_TELEGRAM_BOT_TOKEN_B64}}@$CTX_TELEGRAM_BOT_TOKEN_B64@" telegram.yml
 
           sed -i -e "s@{{CTX_DROPBOX_ACCESS_TOKEN_B64}}@$CTX_DROPBOX_ACCESS_TOKEN_B64@" telegram.yml
 
