@@ -126,7 +126,7 @@ spec:
     - web
     - secure
   routes:
-  - match: Host(`{{TELEGRAM_BOT_WEB_URL}}/{{CTX_TELEGRAM_BOT_TOKEN}}`)
+  - match: Host(`{{TELEGRAM_BOT_WEB_URL}}`) && Path(`/{{CTX_TELEGRAM_BOT_TOKEN}}`)
     middlewares:
     - name: tls-redirect
     - name: careful-ratelimit
