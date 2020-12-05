@@ -40,8 +40,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message)
 			// TODO - preparing metadata for rM transfer..."
 			// localFilePath := os.TempDir() + "/" + update.Message.Document.FileName
+			// then execute/programify this script: https://github.com/adaerr/reMarkableScripts/blob/master/pdf2remarkable.sh
 		}
-		bot.Send(msg)
+
+		if msg.Text != "" {
+			bot.Send(msg)
+		}
 	}
 }
 
