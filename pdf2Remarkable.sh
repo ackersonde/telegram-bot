@@ -164,7 +164,7 @@ EOF
             -colorspace Gray \
             -separate -average \
             -shave 5%x5% \
-            -resize 280x374 \
+            -resize 362x512 \
             ${tmpdir}/${uuid}.thumbnails/0.jpg
 
     # Transfer files

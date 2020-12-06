@@ -69,14 +69,15 @@ jobs:
 
           echo -n "${{ secrets.CTX_DROPBOX_ACCESS_TOKEN }}" | base64 | tr -d \\n > .base64_enc
           export CTX_DROPBOX_ACCESS_TOKEN_B64=`cat .base64_enc`
-          rm .base64_enc
 
           echo -n "${{ secrets.CTX_TELEGRAM_BOT_TOKEN }}" | base64 | tr -d \\n > .base64_enc
           export CTX_TELEGRAM_BOT_TOKEN_B64=`cat .base64_enc`
-          rm .base64_enc
 
           echo -n "${{ secrets.TELEGRAM_BOT_WEB_URL }}" | base64 | tr -d \\n > .base64_enc
           export TELEGRAM_BOT_WEB_URL_B64=`cat .base64_enc`
+
+          echo -n "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" | base64 | tr -d \\n > .base64_enc
+          export REMARKABLE_SSH_HOST_KEY_B64=`cat .base64_enc`
           rm .base64_enc
 
           sed -i -e "s@{{TELEGRAM_BOT_WEB_URL}}@${{ secrets.TELEGRAM_BOT_WEB_URL }}@" telegram.yml
@@ -88,12 +89,9 @@ jobs:
           sed -i -e "s@{{CTX_DROPBOX_ACCESS_TOKEN_B64}}@$CTX_DROPBOX_ACCESS_TOKEN_B64@" telegram.yml
 
           sed -i -e "s@{{CTX_SERVER_DEPLOY_SECRET_B64}}@${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}@" telegram.yml
-
           sed -i -e "s@{{CTX_SERVER_DEPLOY_CACERT_B64}}@${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}@" telegram.yml
-
           sed -i -e "s@{{CTX_POPS4XL_SCP_KEY_SECRET_B64}}@${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}@" telegram.yml
-
-
+          sed -i -e "s@{{REMARKABLE_SSH_HOST_KEY_B64}}@$REMARKABLE_SSH_HOST_KEY_B64@" telegram.yml
 
       - name: Create wireguard tunnel configuration
         run: |
