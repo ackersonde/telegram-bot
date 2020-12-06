@@ -52,10 +52,10 @@ spec:
           - name: ssh-cacert-volume
             mountPath: "/root/.ssh/id_ed25519-cert.pub"
             subPath: id_ed25519-cert.pub
-          - name: scp-pops4xl-key-volume
+          - name: scp-remarkable-key-volume
             readOnly: true
-            mountPath: "/root/.ssh/id_rsa_pix4x"
-            subPath: id_rsa_pix4x
+            mountPath: "/root/.ssh/id_rsa"
+            subPath: id_rsa
       volumes:
       - name: ssh-key-volume
         secret:
@@ -65,9 +65,9 @@ spec:
         secret:
           secretName: server-cacert-secret
           defaultMode: 256
-      - name: scp-pops4xl-key-volume
+      - name: scp-remarkable-key-volume
         secret:
-          secretName: scp-pops4xl-key-secret
+          secretName: scp-remarkable-key-secret
           defaultMode: 256
 
 ---
@@ -110,9 +110,9 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: scp-pops4xl-key-secret
+  name: scp-remarkable-key-secret
 data:
-  id_rsa_pix4x: {{CTX_POPS4XL_SCP_KEY_SECRET_B64}}
+  id_rsa: {{CTX_POPS4XL_SCP_KEY_SECRET_B64}}
 
 ---
 

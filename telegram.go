@@ -36,7 +36,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			default:
 				msg.Text = "I don't know that command"
 			}
-		} else if update.Message.Document != nil {
+		} else if update.Message.Document != nil { // || update.Message.Photo != nil {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message)
 			// TODO - preparing metadata for rM transfer..."
 			// localFilePath := os.TempDir() + "/" + update.Message.Document.FileName

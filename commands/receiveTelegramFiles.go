@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -45,6 +46,9 @@ func downloadFile(URL, fileName string) error {
 	if response.StatusCode != 200 {
 		return errors.New("Received non 200 response code")
 	}
+
+	fileName = strings.ReplaceAll(fileName, " ", "_")
+
 	//Create a empty file
 	file, err := os.Create(os.TempDir() + "/" + fileName)
 	if err != nil {
