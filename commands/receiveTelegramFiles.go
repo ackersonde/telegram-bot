@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -30,9 +31,21 @@ func StoreTelegramFile(bot *tgbotapi.BotAPI, message *tgbotapi.Message) string {
 	return response
 }
 
-// SendTelegramFile is now commented
-func SendTelegramFile() {
+// SendFileToRemarkable is now commented
+func SendFileToRemarkable(bot *tgbotapi.BotAPI, fileName string) string {
+	response := "Unable to convert/send file to Remarkable :( "
+	cmd := exec.Command("/bin/sh", "pdf2Remarkable.sh", "-r",
+		os.TempDir()+"/"+strings.ReplaceAll(fileName, " ", "_"))
+	cmd.Env = append(os.Environ(), "REMARKABLE_HOST=192.168.178.80")
 
+	results, err := cmd.CombinedOutput()
+	if err != nil {
+		response = response + err.Error()
+	} else {
+		response = string(results)
+	}
+
+	return response
 }
 
 func downloadFile(URL, fileName string) error {
