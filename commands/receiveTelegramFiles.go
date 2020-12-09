@@ -31,8 +31,8 @@ func StoreTelegramFile(bot *tgbotapi.BotAPI, message *tgbotapi.Message) string {
 	return response
 }
 
-// SendFileToRemarkable is now commented
-func SendFileToRemarkable(bot *tgbotapi.BotAPI, fileName string) string {
+// SendDirectlyToRemarkable is now commented
+func SendDirectlyToRemarkable(bot *tgbotapi.BotAPI, fileName string) string {
 	response := "Unable to convert/send file to Remarkable :( "
 	cmd := exec.Command("/bin/sh", "pdf2Remarkable.sh", "-r",
 		os.TempDir()+"/"+strings.ReplaceAll(fileName, " ", "_"))

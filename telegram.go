@@ -1,4 +1,4 @@
-package main
+package main2
 
 import (
 	"log"
@@ -37,8 +37,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.Text = "I don't know that command"
 			}
 		} else if update.Message.Document != nil { // || update.Message.Photo != nil {
-			msg.Text = commands.StoreTelegramFile(bot, update.Message)
-			msg.Text = msg.Text + " " + commands.SendFileToRemarkable(bot, update.Message.Document.FileName)
+			commands.StoreTelegramFile(bot, update.Message)
+			log.Printf("mimetype for %s: %s\n", update.Message.Document.FileName, update.Message.Document.MimeType)
+			//msg.Text = commands.SendDirectlyToRemarkable(bot, update.Message.Document.FileName)
+			// TODO: only send PDF files
+			// TODO: test rMAPI for true cloud native approach: https://github.com/juruen/rmapi
+			msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
 		}
 
 		if msg.Text != "" {

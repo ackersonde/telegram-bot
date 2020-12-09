@@ -79,7 +79,6 @@ RESTART_XOCHITL=${RESTART_XOCHITL_DEFAULT}
 if [ $1 == "-r" ] ; then
     shift
     if [ $RESTART_XOCHITL_DEFAULT == 0 ] ; then
-        echo Switching
         RESTART_XOCHITL=1
     else
         RESTART_XOCHITL=0
@@ -168,7 +167,7 @@ EOF
             ${tmpdir}/${uuid}.thumbnails/0.jpg
 
     # Transfer files
-    echo "Transferring $pdfname as $uuid"
+    echo "Transferred $pdfname" # as $uuid"
     scp -r ${tmpdir}/* "${TARGET_DIR}"
     rm -rf ${tmpdir}/*
 done
@@ -176,7 +175,5 @@ done
 rm -rf ${tmpdir}
 
 if [ $RESTART_XOCHITL -eq 1 ] ; then
-    echo "Restarting Xochitl..."
     ssh ${REMARKABLE_HOST} "systemctl restart xochitl"
-    echo "Done."
 fi
