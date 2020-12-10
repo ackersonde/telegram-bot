@@ -62,8 +62,8 @@ spec:
             subPath: known_hosts
           - name: remarkable-cloud-api-tokens-volume
             readOnly: true
-            mountPath: "/root/.config/rmapi.conf"
-            subPath: rmapi.conf
+            mountPath: "/root/.rmapi"
+            subPath: .rmapi
       volumes:
       - name: ssh-key-volume
         secret:

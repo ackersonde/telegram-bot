@@ -45,6 +45,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			bot.Send(msg)
 
 			log.Printf("mimetype for %s: %s\n", update.Message.Document.FileName, update.Message.Document.MimeType)
+			// application/pdf
 			//msg.Text = commands.SendDirectlyToRemarkable(bot, update.Message.Document.FileName)
 
 			msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
