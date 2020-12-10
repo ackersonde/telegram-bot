@@ -8,6 +8,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/juruen/rmapi/api"
 	"github.com/juruen/rmapi/log"
+	"github.com/juruen/rmapi/model"
 )
 
 func getRemarkableAPICtx() *api.ApiCtx {
@@ -38,18 +39,21 @@ func UploadTelegramPDF2RemarkableCloud(bot *tgbotapi.BotAPI,
 	telegramDocument *tgbotapi.Document) string {
 	response := "Unable to upload doc to Remarkable Cloud"
 	uploadDir := "telegram_files"
+	var uploadDocDir model.Document
 
 	ctx := getRemarkableAPICtx()
 	if ctx != nil {
-		_, err := ctx.Filetree.NodeByPath(uploadDir, ctx.Filetree.Root())
+		uploadDocNode, err := ctx.Filetree.NodeByPath(uploadDir, ctx.Filetree.Root())
 
 		if err != nil && err.Error() == "entry doesn't exist" {
-			_, err = ctx.CreateDir(ctx.Filetree.Root().Id(), uploadDir)
+			uploadDocDir, err = ctx.CreateDir(ctx.Filetree.Root().Id(), uploadDir)
+		} else {
+			uploadDocDir = *uploadDocNode.Document
 		}
 
 		if err != nil {
 			fileName := strings.ReplaceAll(telegramDocument.FileName, " ", "_")
-			rmDocument, err := ctx.UploadDocument(uploadDir, os.TempDir()+"/"+fileName)
+			rmDocument, err := ctx.UploadDocument(uploadDocDir.ID, os.TempDir()+"/"+fileName)
 			if err != nil {
 				response = fmt.Sprintf("Upload ERR: %s", err.Error())
 			} else {
