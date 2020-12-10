@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -33,15 +34,19 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				/* or for custom images:
 				<a href="' + image + '">&#8205;</a> // &#8205; -> never show in message
 				also you must set disable_web_page_preview=false */
+			case "rmls":
+				response, err := commands.ShowTreeAtPath(update.Message.CommandArguments())
+				msg.Text = response + fmt.Sprintf("%v", err)
 			default:
 				msg.Text = "I don't know that command"
 			}
 		} else if update.Message.Document != nil { // || update.Message.Photo != nil {
-			commands.StoreTelegramFile(bot, update.Message)
+			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
+			bot.Send(msg)
+
 			log.Printf("mimetype for %s: %s\n", update.Message.Document.FileName, update.Message.Document.MimeType)
 			//msg.Text = commands.SendDirectlyToRemarkable(bot, update.Message.Document.FileName)
-			// TODO: only send PDF files
-			// TODO: test rMAPI for true cloud native approach: https://github.com/juruen/rmapi
+
 			msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
 		}
 

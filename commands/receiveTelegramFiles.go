@@ -13,20 +13,20 @@ import (
 )
 
 // StoreTelegramFile is now commented
-func StoreTelegramFile(bot *tgbotapi.BotAPI, message *tgbotapi.Message) string {
+func StoreTelegramFile(bot *tgbotapi.BotAPI, document *tgbotapi.Document) string {
 	response := "Sorry, I couldn't download your file."
 
-	downloadURL, err := bot.GetFileDirectURL(message.Document.FileID)
+	downloadURL, err := bot.GetFileDirectURL(document.FileID)
 	if err != nil {
 		response = fmt.Sprintf("couldn't get file URL: %s", err.Error())
 	} else {
 		response = fmt.Sprintf("Attempting to download: %s", downloadURL)
 	}
-	err = downloadFile(downloadURL, message.Document.FileName)
+	err = downloadFile(downloadURL, document.FileName)
 	if err != nil {
 		response = fmt.Sprintf("failed to download file: %s", err.Error())
 	} else {
-		response = fmt.Sprintf("Downloaded %s", message.Document.FileName)
+		response = fmt.Sprintf("Downloaded %s", document.FileName)
 	}
 	return response
 }
