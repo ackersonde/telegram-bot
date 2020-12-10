@@ -62,7 +62,8 @@ spec:
             subPath: known_hosts
           - name: remarkable-cloud-api-tokens-volume
             readOnly: false
-            mountPath: "/root/.rmapi"
+            mountPath: "/root/.config/rmapi/rmapi.conf"
+            subPath: rmapi.conf
       volumes:
       - name: ssh-key-volume
         secret:
@@ -143,7 +144,7 @@ kind: Secret
 metadata:
   name: remarkable-cloud-api-tokens-secret
 data:
-  .rmapi: {{CTX_REMARKABLE_CLOUD_API_TOKENS_B64}}
+  rmapi.conf: {{CTX_REMARKABLE_CLOUD_API_TOKENS_B64}}
 
 ---
 apiVersion: traefik.containo.us/v1alpha1
