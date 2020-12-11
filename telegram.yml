@@ -44,26 +44,24 @@ spec:
           - secretRef:
               name: telegram-bot-env-secrets
           volumeMounts:
-          # https://www.jannikarndt.de/blog/2018/03/ssh_key_as_kubernetes_secret/
           - name: ssh-key-volume
-            readOnly: true
             mountPath: "/root/.ssh/id_ed25519"
-            subPath: id_ed25519
           - name: ssh-cacert-volume
             mountPath: "/root/.ssh/id_ed25519-cert.pub"
-            subPath: id_ed25519-cert.pub
           - name: scp-remarkable-key-volume
-            readOnly: true
             mountPath: "/root/.ssh/id_rsa"
-            subPath: id_rsa
           - name: ssh-remarkable-host-key-volume
-            readOnly: true
             mountPath: "/root/.ssh/known_hosts"
-            subPath: known_hosts
           - name: remarkable-cloud-api-tokens-volume
-            readOnly: false
-            mountPath: "/root/.config/rmapi/rmapi.conf"
-            subPath: rmapi.conf
+            mountPath: "/root/.ssh/rmapi.conf"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - "/bin/sh"
+                - "-c"
+                - >
+                  mkdir -p /root/.config/rmapi && cp /root/.ssh/rmapi.conf /root/.config/rmapi/;
       volumes:
       - name: ssh-key-volume
         secret:
