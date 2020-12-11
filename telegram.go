@@ -36,7 +36,11 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				also you must set disable_web_page_preview=false */
 			case "rmls":
 				response, err := commands.ShowTreeAtPath(update.Message.CommandArguments())
-				msg.Text = response + fmt.Sprintf("%v", err)
+				if err == nil {
+					msg.Text = response + fmt.Sprintf("%v", err)
+				} else {
+					msg.Text = err.Error()
+				}
 			default:
 				msg.Text = "I don't know that command"
 			}
@@ -44,11 +48,9 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
 			bot.Send(msg)
 
-			log.Printf("mimetype for %s: %s\n", update.Message.Document.FileName, update.Message.Document.MimeType)
-			// application/pdf
-			//msg.Text = commands.SendDirectlyToRemarkable(bot, update.Message.Document.FileName)
-
-			msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
+			if update.Message.Document.MimeType == "application/pdf" { // || "application/epub" ?
+				msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
+			}
 		}
 
 		if msg.Text != "" {
@@ -63,7 +65,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
