@@ -46,14 +46,19 @@ spec:
           volumeMounts:
           - name: ssh-key-volume
             mountPath: "/root/.ssh/id_ed25519"
+            subPath: id_ed25519
           - name: ssh-cacert-volume
             mountPath: "/root/.ssh/id_ed25519-cert.pub"
+            subPath: id_ed25519-cert.pub
           - name: scp-remarkable-key-volume
             mountPath: "/root/.ssh/id_rsa"
+            subPath: id_rsa
           - name: ssh-remarkable-host-key-volume
             mountPath: "/root/.ssh/known_hosts"
+            subPath: known_hosts
           - name: remarkable-cloud-api-tokens-volume
             mountPath: "/root/.ssh/rmapi.conf"
+            subPath: rmapi.conf
           lifecycle:
             postStart:
               exec:
