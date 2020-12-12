@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,31 +17,47 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		imageDir := "https://ackerson.de/images/telegram-bot-images/"
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
-				msg.Text = "type /sayhi or /status."
-			case "sayhi":
-				msg.Text = "Hi :)"
-			case "status":
-				msg.Text = "I'm ok."
-			case "withArgument":
-				msg.Text = "You supplied the following argument: " + update.Message.CommandArguments()
+				// rmls
+				msg.Text = "<a href='" + imageDir + "rm.png'>&#8205;</a> /rmls <dir>: List contents of reMarkable"
+				bot.Send(msg)
+
+				// sw
+
+				// crypto
+
+				// pi
+
+				// pgp
+
+				// torq
+
+				// trans
+
+				// vpn
+
+				// wg
+
+				msg.Text = "/help: Show this msg"
 			case "html":
 				msg.ParseMode = "html"
 				msg.Text = "This will be interpreted as HTML, click <a href=\"https://www.example.com\">here</a>"
 				/* or for custom images:
+				msg.DisableWebPagePreview = false
+
 				<a href="' + image + '">&#8205;</a> // &#8205; -> never show in message
-				also you must set disable_web_page_preview=false */
+				*/
 			case "rmls":
-				response, err := commands.ShowTreeAtPath(update.Message.CommandArguments())
-				if err == nil {
-					msg.Text = response + fmt.Sprintf("%v", err)
-				} else {
+				var err error
+				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
+				if err != nil {
 					msg.Text = err.Error()
 				}
 			default:
-				msg.Text = "I don't know that command"
+				msg.Text = "I don't know the command '" + update.Message.Text + "'"
 			}
 		} else if update.Message.Document != nil { // || update.Message.Photo != nil {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
