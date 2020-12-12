@@ -1,14 +1,47 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ackersonde/telegram-bot/commands"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
+
+func downloadFile(URL, fileName string) error {
+	//Get the response bytes from the url
+	response, err := http.Get(URL)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return errors.New("Received non 200 response code")
+	}
+
+	fileName = strings.ReplaceAll(fileName, " ", "_")
+
+	//Create a empty file
+	file, err := os.Create(os.TempDir() + "/" + fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	//Write the bytes to the file
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
@@ -52,12 +85,8 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.Text = "This will be interpreted as HTML: <img src=\"" + imageDir + "rm.png\">"
 
 			case "stickerImage":
-				response, err := http.Get(imageDir + "rm.png")
-				if err != nil {
-					log.Printf("%s\n", err.Error())
-				}
-				defer response.Body.Close()
-				msg := tgbotapi.NewStickerUpload(chatID, response.Body)
+				downloadFile(imageDir+"rm.png", "rm.png")
+				msg := tgbotapi.NewStickerUpload(chatID, os.TempDir()+"/rm.png")
 				sticker, err := bot.Send(msg)
 				if err != nil {
 					log.Printf("%s\n", err.Error())
@@ -79,20 +108,11 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				}
 
 			case "photoUpload":
-				response, err := http.Get(imageDir + "rm.png")
-				if err != nil {
-					log.Printf("%s\n", err.Error())
-				}
-				defer response.Body.Close()
+				downloadFile(imageDir+"rm.png", "rm.png")
 
-				msg := tgbotapi.NewPhotoUpload(chatID, response.Body)
+				msg := tgbotapi.NewPhotoUpload(chatID, os.TempDir()+"/rm.png")
 				msg.ReplyToMessageID = update.Message.MessageID
 				msg.Caption = "Test"
-
-				_, err = bot.Send(msg)
-				if err != nil {
-					log.Printf("%s\n", err.Error())
-				}
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
