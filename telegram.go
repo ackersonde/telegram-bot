@@ -18,19 +18,19 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		imageDir := "https://ackerson.de/images/telegram-bot-images/"
+		chatID := update.Message.Chat.ID
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "anchor":
 				msg.ParseMode = "html"
-				msg.DisableWebPagePreview = true
+				msg.DisableWebPagePreview = false
 				msg.Text = "<a href=\"" + imageDir + "rm.png\">&#8205;</a> /rmls (dir): List contents of reMarkable\n"
 			case "image":
 				msg.ParseMode = "markdownv2"
-				msg.Text = "[ ‏ ](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
+				msg.DisableWebPagePreview = false
+				msg.Text = "[](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
 			case "help":
-				// rmls
-				msg.ParseMode = "markdownv2"
-				msg.Text = "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable\n"
+				msg.Text = "Known cmds incl: /help /rmls /sw /crypto /pi /pgp /torq..."
 
 				// sw
 
@@ -47,28 +47,52 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				// vpn
 
 				// wg
-
-				//msg.Text = "/help: Show this msg"
-			case "html":
+			case "imgTag":
 				msg.ParseMode = "html"
-				msg.Text = "This will be interpreted as HTML, click <a href=\"https://www.example.com\">here</a>"
-				/* or for custom images:
-				msg.DisableWebPagePreview = false
+				msg.Text = "This will be interpreted as HTML: <img src=\"" + imageDir + "rm.png\">"
 
-				<a href="' + image + '">&#8205;</a> // &#8205; -> never show in message
-				*/
-			case "photo":
-				cfg := tgbotapi.NewMediaGroup(update.Message.Chat.ID, []interface{}{
-					tgbotapi.NewInputMediaPhoto(imageDir + "rm.png"),
-				})
+			case "stickerImage":
+				response, err := http.Get(imageDir + "rm.png")
+				if err != nil {
+					log.Printf("%s\n", err.Error())
+				}
+				defer response.Body.Close()
+				msg := tgbotapi.NewStickerUpload(chatID, response.Body)
+				sticker, err := bot.Send(msg)
+				if err != nil {
+					log.Printf("%s\n", err.Error())
+				} else {
+					log.Printf("Reuse sticker ID: %s\n", sticker.Document.FileID)
+				}
+			case "mediaPhoto":
+				image := tgbotapi.NewInputMediaPhoto(imageDir + "rm.png")
+				image.Caption = "Testing 123"
+				cfg := tgbotapi.NewMediaGroup(
+					update.Message.Chat.ID,
+					[]interface{}{
+						image,
+					})
+
 				_, err := bot.Send(cfg)
-				//msg := tgbotapi.NewPhotoUpload()
-				//msg.Caption = "Test"
-
 				if err != nil {
 					log.Printf("%s\n", err.Error())
 				}
 
+			case "photoUpload":
+				response, err := http.Get(imageDir + "rm.png")
+				if err != nil {
+					log.Printf("%s\n", err.Error())
+				}
+				defer response.Body.Close()
+
+				msg := tgbotapi.NewPhotoUpload(chatID, response.Body)
+				msg.ReplyToMessageID = update.Message.MessageID
+				msg.Caption = "Test"
+
+				_, err = bot.Send(msg)
+				if err != nil {
+					log.Printf("%s\n", err.Error())
+				}
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
@@ -80,10 +104,19 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			}
 		} else if update.Message.Document != nil { // || update.Message.Photo != nil {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
-			bot.Send(msg)
+			resp, err := bot.Send(msg)
 
-			if update.Message.Document.MimeType == "application/pdf" { // || "application/epub" ?
+			if err == nil && update.Message.Document.MimeType == "application/pdf" { // || "application/epub" ?
 				msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
+				edit := tgbotapi.EditMessageTextConfig{
+					BaseEdit: tgbotapi.BaseEdit{
+						ChatID:    chatID,
+						MessageID: resp.MessageID,
+					},
+					Text: msg.Text,
+				}
+				bot.Send(edit)
+				msg.Text = ""
 			}
 		}
 
