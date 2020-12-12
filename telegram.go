@@ -31,7 +31,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.ParseMode = "markdownv2"
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
-					msg.Text = msg.Text + "<code>" + cmd.Command + "</code> : " + cmd.Description + "\r\n"
+					msg.Text = msg.Text + "`" + cmd.Command + "` " + cmd.Description + "\n"
 				}
 				bot.Send(msg)
 
