@@ -23,7 +23,6 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			{Command: "rmls", Description: "list contents of remarkable"},
 			{Command: "help", Description: "show this list"},
 		}
-
 		bot.SetMyCommands(myCommands)
 
 		if update.Message.IsCommand() {
@@ -32,8 +31,9 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.ParseMode = "markdownv2"
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
-					msg.Text = msg.Text + "`" + cmd.Command + "` : " + cmd.Description + "\n"
+					msg.Text = msg.Text + "<code>" + cmd.Command + "</code> : " + cmd.Description + "\r\n"
 				}
+				bot.Send(msg)
 
 				// sw
 
