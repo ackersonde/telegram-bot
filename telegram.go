@@ -23,14 +23,14 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			case "help":
 				/*msg.ParseMode = "html"
 				msg.DisableWebPagePreview = true
-				response = "<a href='" + imageDir + "rm.png'>&#8205;</a> /rmls* (dir): List contents of reMarkable\n"
-				bot.Send(msg)s
+				msg.Text = "<a href='" + imageDir + "rm.png'>&#8205;</a> /rmls* (dir): List contents of reMarkable\n"
+				bot.Send(msg)
 				*/
 				msg.ParseMode = "markdownv2"
 				response := "![rmls](" + imageDir + "rm.png) */rmls* (dir): List img contents of reMarkable\n"
 
 				// rmls
-				response = response + "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
+				response = "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
 				msg.Text = response
 				bot.Send(msg)
 
