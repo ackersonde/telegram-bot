@@ -1,47 +1,14 @@
 package main
 
 import (
-	"errors"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/ackersonde/telegram-bot/commands"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
-
-func downloadFile(URL, fileName string) error {
-	//Get the response bytes from the url
-	response, err := http.Get(URL)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 {
-		return errors.New("Received non 200 response code")
-	}
-
-	fileName = strings.ReplaceAll(fileName, " ", "_")
-
-	//Create a empty file
-	file, err := os.Create(os.TempDir() + "/" + fileName)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	//Write the bytes to the file
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
@@ -50,20 +17,22 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		imageDir := "https://ackerson.de/images/telegram-bot-images/"
 		chatID := update.Message.Chat.ID
+
+		var myCommands = []tgbotapi.BotCommand{
+			{Command: "rmls", Description: "list contents of remarkable"},
+			{Command: "help", Description: "show this list"},
+		}
+
+		bot.SetMyCommands(myCommands)
+
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
-			case "anchor":
-				msg.ParseMode = "html"
-				msg.DisableWebPagePreview = false
-				msg.Text = "<a href=\"" + imageDir + "rm.png\">&#8205;</a> /rmls (dir): List contents of reMarkable\n"
-			case "image":
-				msg.ParseMode = "markdownv2"
-				msg.DisableWebPagePreview = false
-				msg.Text = "[](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
 			case "help":
-				msg.Text = "Known cmds incl: /help /rmls /sw /crypto /pi /pgp /torq..."
+				cmds, _ := bot.GetMyCommands()
+				for _, cmd := range cmds {
+					msg.Text = msg.Text + "`" + cmd.Command + "` : " + cmd.Description
+				}
 
 				// sw
 
@@ -80,39 +49,6 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				// vpn
 
 				// wg
-			case "imgTag":
-				msg.ParseMode = "html"
-				msg.Text = "This will be interpreted as HTML: <img src='" + imageDir + "rm.png'>"
-
-			case "stickerImage":
-				downloadFile(imageDir+"rm.png", "rm.png")
-				msg := tgbotapi.NewStickerUpload(chatID, os.TempDir()+"/rm.png")
-				sticker, err := bot.Send(msg)
-				if err != nil {
-					log.Printf("%s\n", err.Error())
-				} else {
-					log.Printf("Reuse sticker ID: %s\n", sticker.Sticker.FileUniqueID)
-				}
-			case "mediaPhoto":
-				image := tgbotapi.NewInputMediaPhoto(imageDir + "rm.png")
-				image.Caption = "Testing 123"
-				cfg := tgbotapi.NewMediaGroup(
-					update.Message.Chat.ID,
-					[]interface{}{
-						image,
-					})
-
-				_, err := bot.Send(cfg)
-				if err != nil {
-					log.Printf("%s\n", err.Error())
-				}
-
-			case "photoUpload":
-				downloadFile(imageDir+"rm.png", "rm.png")
-
-				msg := tgbotapi.NewPhotoUpload(chatID, os.TempDir()+"/rm.png")
-				msg.ReplyToMessageID = update.Message.MessageID
-				msg.Caption = "Test"
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
