@@ -24,15 +24,13 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.ParseMode = "html"
 				msg.DisableWebPagePreview = true
 				msg.Text = "<a href=\"" + imageDir + "rm.png\">&#8205;</a> /rmls (dir): List contents of reMarkable\n"
-				bot.Send(msg)
 			case "image":
 				msg.ParseMode = "markdownv2"
-				msg.Text = "![rmls](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
-				bot.Send(msg)
+				msg.Text = "[ ‏ ](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
 			case "help":
 				// rmls
-				msg.Text = "[rmls](" + imageDir + "rm.png) /rmls (dir): List contents of reMarkable"
-				bot.Send(msg)
+				msg.ParseMode = "markdownv2"
+				msg.Text = "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable\n"
 
 				// sw
 
