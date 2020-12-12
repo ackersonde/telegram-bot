@@ -29,9 +29,10 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
+				msg.ParseMode = "markdownv2"
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
-					msg.Text = msg.Text + "`" + cmd.Command + "` : " + cmd.Description
+					msg.Text = msg.Text + "`" + cmd.Command + "` : " + cmd.Description + "\n"
 				}
 
 				// sw
