@@ -58,8 +58,13 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				<a href="' + image + '">&#8205;</a> // &#8205; -> never show in message
 				*/
 			case "photo":
-				photo := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, imageDir+"rm.png")
-				bot.Send(photo)
+				msg := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, imageDir+"rm.png")
+				msg.Caption = "Test"
+				_, err := bot.Send(msg)
+
+				if err != nil {
+					log.Printf("%s\n", err.Error())
+				}
 
 			case "rmls":
 				var err error
