@@ -20,18 +20,18 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		imageDir := "https://ackerson.de/images/telegram-bot-images/"
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
-			case "help":
-				/*msg.ParseMode = "html"
+			case "anchor":
+				msg.ParseMode = "html"
 				msg.DisableWebPagePreview = true
-				msg.Text = "<a href='" + imageDir + "rm.png'>&#8205;</a> /rmls* (dir): List contents of reMarkable\n"
+				msg.Text = "<a href=\"" + imageDir + "rm.png\">&#8205;</a> /rmls (dir): List contents of reMarkable\n"
 				bot.Send(msg)
-				*/
+			case "image":
 				msg.ParseMode = "markdownv2"
-				response := "![rmls](" + imageDir + "rm.png) */rmls* (dir): List img contents of reMarkable\n"
-
+				msg.Text = "![rmls](" + imageDir + "rm.png) /rmls (dir): List img contents of reMarkable\n"
+				bot.Send(msg)
+			case "help":
 				// rmls
-				response = "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
-				msg.Text = response
+				msg.Text = "[rmls](" + imageDir + "rm.png) /rmls (dir): List contents of reMarkable"
 				bot.Send(msg)
 
 				// sw
