@@ -82,7 +82,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				// wg
 			case "imgTag":
 				msg.ParseMode = "html"
-				msg.Text = "This will be interpreted as HTML: <img src=\"" + imageDir + "rm.png\">"
+				msg.Text = "This will be interpreted as HTML: <img src='" + imageDir + "rm.png'>"
 
 			case "stickerImage":
 				downloadFile(imageDir+"rm.png", "rm.png")
@@ -91,7 +91,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				if err != nil {
 					log.Printf("%s\n", err.Error())
 				} else {
-					log.Printf("Reuse sticker ID: %s\n", sticker.Document.FileID)
+					log.Printf("Reuse sticker ID: %s\n", sticker.Sticker.FileUniqueID)
 				}
 			case "mediaPhoto":
 				image := tgbotapi.NewInputMediaPhoto(imageDir + "rm.png")
