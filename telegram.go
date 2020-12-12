@@ -23,12 +23,16 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			case "help":
 				msg.ParseMode = "html"
 				msg.DisableWebPagePreview = true
-				msg.Text = "<a href='" + imageDir + "rm.png'>&#8205;</a> /rmls <dir>: List contents of reMarkable"
+				msg.Text = "<a href='" + imageDir + "rm.png'>&#8205;</a> */rmls* (dir): List contents of reMarkable"
 				bot.Send(msg)
 
 				msg.ParseMode = "markdownv2"
 				// rmls
-				msg.Text = "![/rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
+				msg.Text = "![rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
+				bot.Send(msg)
+
+				// rmls
+				msg.Text = "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
 				bot.Send(msg)
 
 				// sw
@@ -47,7 +51,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 				// wg
 
-				msg.Text = "/help: Show this msg"
+				//msg.Text = "/help: Show this msg"
 			case "html":
 				msg.ParseMode = "html"
 				msg.Text = "This will be interpreted as HTML, click <a href=\"https://www.example.com\">here</a>"
