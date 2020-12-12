@@ -27,11 +27,11 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				bot.Send(msg)s
 				*/
 				msg.ParseMode = "markdownv2"
-				// rmls
-				msg.Text = "![rmls](" + imageDir + "rm.png) */rmls* (dir): List img contents of reMarkable"
+				response := "![rmls](" + imageDir + "rm.png) */rmls* (dir): List img contents of reMarkable\n"
 
 				// rmls
-				msg.Text = msg.Text + "\n[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
+				response = response + "[rmls](" + imageDir + "rm.png) */rmls* (dir): List contents of reMarkable"
+				msg.Text = response
 				bot.Send(msg)
 
 				// sw
