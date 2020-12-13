@@ -33,32 +33,22 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			case "help":
 				msg.ParseMode = "MarkdownV2"
 
-				response := ""
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
-					response = response + "`" + cmd.Command + "` " + cmd.Description + "\n"
+					msg.Text = msg.Text + "`" + cmd.Command + "` " + tgbotapi.EscapeText(msg.ParseMode, cmd.Description) + "\n"
 				}
-
-				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 			case "version":
 				msg.ParseMode = "MarkdownV2"
 
 				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
 				githubRunID := os.Getenv("GITHUB_RUN_ID")
-				response := "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
-					githubRunID + ") using " + fingerprint
+				msg.Text = "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
+					githubRunID + ") using " + tgbotapi.EscapeText(msg.ParseMode, fingerprint)
 
-				log.Printf("prepping %s\n", response)
-				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
-				log.Printf("escaped to: %s\n", msg.Text)
 			case "sw":
 				msg.ParseMode = "MarkdownV2"
 
-				response := "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
-
-				log.Printf("prepping %s\n", response)
-				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
-				log.Printf("escaped to: %s\n", msg.Text)
+				msg.Text = "[7d forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
