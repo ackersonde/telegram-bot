@@ -32,9 +32,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			args := update.Message.CommandArguments()
 			command := update.Message.Command()
+			log.Printf("ORIG CMD: %s %s", command, args)
+
 			if strings.HasSuffix(command, "@hop_on_pop_bot") {
 				args = command[0:strings.LastIndex(command, "@hop_on_pop_bot")]
 				command = "rmls"
+				log.Printf("MOD CMD: %s %s", command, args)
 			}
 
 			switch command {
@@ -110,7 +113,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
