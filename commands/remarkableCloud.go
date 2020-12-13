@@ -79,9 +79,9 @@ func ShowTreeAtPath(path string) (string, error) {
 		for _, e := range node.Children {
 			name := e.Name()
 			if e.IsFile() {
-				response = response + fmt.Sprintf("\\- \t%s\n", name)
+				response = response + fmt.Sprintf("- \t%s\n", name)
 			} else {
-				response = response + fmt.Sprintf("/rmls%s\n", "%20"+path+name)
+				response = response + fmt.Sprintf("/%s\n", path+name)
 			}
 		}
 	}
