@@ -32,11 +32,11 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			args := update.Message.CommandArguments()
 			command := update.Message.Command()
-			log.Printf("\n\nMSG: %v\n\n", update.Message)
+			log.Printf("\n\nMSG: %v\n\n", update.Message.Text)
 			log.Printf("ORIG CMD: %s %s", command, args)
 
-			if strings.HasSuffix(command, "/") {
-				args = command[0:strings.LastIndex(command, "/")]
+			if strings.HasSuffix(update.Message.Text, "@hop_on_pop_bot") {
+				args = command[0:strings.LastIndex(command, "@hop_on_pop_bot")]
 				command = "rmls"
 				log.Printf("MOD CMD: %s %s", command, args)
 			}
@@ -73,7 +73,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 					msg.Text = err.Error()
 				} else {
 					args = "/" + args
-					msg.Text = "reMarkable files at '" + args + "':\n\n	" + msg.Text
+					msg.Text = "reMarkable files at '" + args + "':\n\n" + msg.Text
 				}
 
 			default:
