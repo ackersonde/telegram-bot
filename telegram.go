@@ -17,39 +17,32 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		msg.ParseMode = "markdownv2"
+
 		chatID := update.Message.Chat.ID
 
 		var myCommands = []tgbotapi.BotCommand{
-			{Command: "rmls", Description: "list contents of remarkable"},
 			{Command: "help", Description: "show this list"},
+			{Command: "version", Description: "show this list"},
+			{Command: "sw", Description: "show this list"},
+			{Command: "rmls", Description: "list contents of remarkable"},
 		}
 		bot.SetMyCommands(myCommands)
 
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
-				msg.ParseMode = "markdownv2"
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
 					msg.Text = msg.Text + "`" + cmd.Command + "` " + cmd.Description + "\n"
 				}
-				bot.Send(msg)
-
-				// sw
-
-				// crypto
-
-				// pi
-
-				// pgp
-
-				// torq
-
-				// trans
-
-				// vpn
-
-				// wg
+			case "version":
+				fingerprint := getDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
+				githubRunID := os.Getenv("GITHUB_RUN_ID")
+				msg.Text = "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
+					githubRunID + ") using " + fingerprint
+			case "sw":
+				msg.Text = "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
