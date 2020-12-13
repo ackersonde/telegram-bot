@@ -19,7 +19,6 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 		chatID := update.Message.Chat.ID
 		msg := tgbotapi.NewMessage(chatID, "")
-		msg.ParseMode = "markdownv2"
 
 		var myCommands = []tgbotapi.BotCommand{
 			{Command: "help", Description: "show this list"},
@@ -37,12 +36,20 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 					msg.Text = msg.Text + "`" + cmd.Command + "` " + cmd.Description + "\n"
 				}
 			case "version":
+				msg.ParseMode = "markdownv2"
+
 				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
 				githubRunID := os.Getenv("GITHUB_RUN_ID")
-				msg.Text = "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
+				response := "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
 					githubRunID + ") using " + fingerprint
+
+				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 			case "sw":
-				msg.Text = "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
+				msg.ParseMode = "markdownv2"
+
+				response := "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
+
+				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
