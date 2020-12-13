@@ -17,15 +17,14 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		msg.ParseMode = "markdownv2"
-
 		chatID := update.Message.Chat.ID
+		msg := tgbotapi.NewMessage(chatID, "")
+		msg.ParseMode = "markdownv2"
 
 		var myCommands = []tgbotapi.BotCommand{
 			{Command: "help", Description: "show this list"},
-			{Command: "version", Description: "show this list"},
-			{Command: "sw", Description: "show this list"},
+			{Command: "version", Description: "which version am I?"},
+			{Command: "sw", Description: "7d forecast schwabhausen"},
 			{Command: "rmls", Description: "list contents of remarkable"},
 		}
 		bot.SetMyCommands(myCommands)
@@ -83,7 +82,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot.Debug = false
+	bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
