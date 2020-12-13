@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ackersonde/telegram-bot/commands"
@@ -74,6 +75,8 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				bot.Send(edit)
 				msg.Text = ""
 			}
+		} else if strings.ToLower(update.Message.Text) == "help" {
+			msg.Text = "This bot responds only to commands - try '/help'"
 		}
 
 		if msg.Text != "" {
