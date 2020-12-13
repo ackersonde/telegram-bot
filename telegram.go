@@ -30,7 +30,14 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		msg := tgbotapi.NewMessage(chatID, "")
 
 		if update.Message.IsCommand() {
-			switch update.Message.Command() {
+			args := update.Message.CommandArguments()
+			command := update.Message.Command()
+			if strings.HasSuffix(command, "@hop_on_pop_bot") {
+				args = command[0:strings.LastIndex(command, "@hop_on_pop_bot")]
+				command = "rmls"
+			}
+
+			switch command {
 			case "help":
 				msg.ParseMode = "MarkdownV2"
 
@@ -57,12 +64,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 			case "rmls":
 				var err error
-				args := update.Message.CommandArguments()
 				msg.Text, err = commands.ShowTreeAtPath(args)
 				if err != nil {
 					msg.Text = err.Error()
 				} else {
-					msg.Text = "reMarkable files at '" + args + "':\n\n" + msg.Text
+					args = "/" + args
+					msg.Text = "reMarkable files at '" + args + "':\n\n	" + msg.Text
 				}
 
 			default:
