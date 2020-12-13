@@ -48,13 +48,17 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				response := "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
 					githubRunID + ") using " + fingerprint
 
+				log.Printf("prepping %s\n", response)
 				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
+				log.Printf("escaped to: %s\n", msg.Text)
 			case "sw":
 				msg.ParseMode = "markdownv2"
 
 				response := "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
 
+				log.Printf("prepping %s\n", response)
 				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
+				log.Printf("escaped to: %s\n", msg.Text)
 			case "rmls":
 				var err error
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
