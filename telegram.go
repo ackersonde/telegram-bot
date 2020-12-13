@@ -57,8 +57,6 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 			case "rmls":
 				var err error
-				msg.ParseMode = "MarkdownV2"
-
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
 				if err != nil {
 					msg.Text = err.Error()

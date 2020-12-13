@@ -77,13 +77,11 @@ func ShowTreeAtPath(path string) (string, error) {
 			return "Unable to find '" + path + "'", err
 		}
 		for _, e := range node.Children {
-			name := tgbotapi.EscapeText("MarkdownV2", e.Name())
+			name := e.Name()
 			if e.IsFile() {
 				response = response + fmt.Sprintf("\\- \t%s\n", name)
 			} else {
-				response = response + fmt.Sprintf(
-					"[%s/](tg://bot_command?command=rmls%s)\n",
-					name, "%20"+path+name)
+				response = response + fmt.Sprintf("/rmls%s\n", "%20"+path+name)
 			}
 		}
 	}
