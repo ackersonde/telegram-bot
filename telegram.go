@@ -12,6 +12,14 @@ import (
 )
 
 func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+	var myCommands = []tgbotapi.BotCommand{
+		{Command: "help", Description: "show this list"},
+		{Command: "version", Description: "which version am I?"},
+		{Command: "sw", Description: "7d forecast schwabhausen"},
+		{Command: "rmls", Description: "list contents of remarkable"},
+	}
+	bot.SetMyCommands(myCommands)
+
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -20,21 +28,18 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		chatID := update.Message.Chat.ID
 		msg := tgbotapi.NewMessage(chatID, "")
 
-		var myCommands = []tgbotapi.BotCommand{
-			{Command: "help", Description: "show this list"},
-			{Command: "version", Description: "which version am I?"},
-			{Command: "sw", Description: "7d forecast schwabhausen"},
-			{Command: "rmls", Description: "list contents of remarkable"},
-		}
-		bot.SetMyCommands(myCommands)
-
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
+				msg.ParseMode = "markdownv2"
+
+				response := ""
 				cmds, _ := bot.GetMyCommands()
 				for _, cmd := range cmds {
-					msg.Text = msg.Text + "`" + cmd.Command + "` " + cmd.Description + "\n"
+					response = response + "`" + cmd.Command + "` " + cmd.Description + "\n"
 				}
+
+				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 			case "version":
 				msg.ParseMode = "markdownv2"
 
@@ -78,7 +83,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		if msg.Text != "" {
-			bot.Send(msg)
+			msgResp, err := bot.Send(msg)
+			if err != nil {
+				log.Printf("Unable to send msg to Telegram: %s\n", err.Error())
+			} else {
+				log.Printf("Sent msg to Telegram: %s\n", msgResp.Text)
+			}
 		}
 	}
 }
