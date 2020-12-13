@@ -32,13 +32,10 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			args := update.Message.CommandArguments()
 			command := update.Message.Command()
-			log.Printf("\n\nMSG: %v\n\n", update.Message.Text)
-			log.Printf("ORIG CMD: %s %s", command, args)
 
 			if strings.HasSuffix(update.Message.Text, "@hop_on_pop_bot") {
-				args = command[0:strings.LastIndex(command, "@hop_on_pop_bot")]
+				args = command
 				command = "rmls"
-				log.Printf("MOD CMD: %s %s", command, args)
 			}
 
 			switch command {
