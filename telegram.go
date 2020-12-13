@@ -32,7 +32,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			args := update.Message.CommandArguments()
 			command := update.Message.Command()
-			log.Printf("%v\n", command)
+			log.Printf("\n\nMSG: %v\n\n", update.Message)
 			log.Printf("ORIG CMD: %s %s", command, args)
 
 			if strings.HasSuffix(command, "/") {
