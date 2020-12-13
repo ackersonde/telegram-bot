@@ -57,9 +57,12 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 			case "rmls":
 				var err error
-				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
+				args := update.Message.CommandArguments()
+				msg.Text, err = commands.ShowTreeAtPath(args)
 				if err != nil {
 					msg.Text = err.Error()
+				} else {
+					msg.Text = "reMarkable files at '" + args + "':\n\n" + msg.Text
 				}
 
 			default:
