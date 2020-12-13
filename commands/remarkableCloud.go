@@ -81,7 +81,9 @@ func ShowTreeAtPath(path string) (string, error) {
 			if e.IsFile() {
 				response = response + fmt.Sprintf("\\- \t%s\n", name)
 			} else {
-				response = response + fmt.Sprintf("[%s](/rmls %s)\n", name, path+name)
+				response = response + fmt.Sprintf(
+					"[%s/](tg://bot_command?command=rmls%s)\n",
+					name, "%20"+path+name)
 			}
 		}
 	}
