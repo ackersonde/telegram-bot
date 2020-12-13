@@ -38,25 +38,32 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				for _, cmd := range cmds {
 					msg.Text = msg.Text + "`" + cmd.Command + "` " + tgbotapi.EscapeText(msg.ParseMode, cmd.Description) + "\n"
 				}
+
 			case "version":
 				msg.ParseMode = "MarkdownV2"
 
-				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
 				githubRunID := os.Getenv("GITHUB_RUN_ID")
+				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
+				// cut from Principals:
+				fingerprint = tgbotapi.EscapeText(msg.ParseMode,
+					fingerprint[0:strings.LastIndex(fingerprint, "Principals:")])
+
 				msg.Text = "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
-					githubRunID + ") using " + tgbotapi.EscapeText(msg.ParseMode, fingerprint)
+					githubRunID + ") using " + fingerprint
 
 			case "sw":
 				msg.ParseMode = "MarkdownV2"
-
 				msg.Text = "[7d forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
+
 			case "rmls":
 				var err error
 				msg.ParseMode = "MarkdownV2"
+
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
 				if err != nil {
 					msg.Text = err.Error()
 				}
+
 			default:
 				msg.Text = "I don't know the command '" + update.Message.Text + "'"
 			}
@@ -77,7 +84,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.Text = ""
 			}
 		} else if strings.ToLower(update.Message.Text) == "help" {
-			msg.Text = "This bot responds only to commands - try '/help'"
+			msg.Text = "This bot responds only to commands - try /help"
 		}
 
 		if msg.Text != "" {
