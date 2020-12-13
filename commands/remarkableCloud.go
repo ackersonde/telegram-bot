@@ -81,7 +81,7 @@ func ShowTreeAtPath(path string) (string, error) {
 			if e.IsFile() {
 				response = response + fmt.Sprintf("- \t%s\n", name)
 			} else {
-				response = response + fmt.Sprintf("/%s/\n", path+name)
+				response = response + fmt.Sprintf("/%s\n", path+name)
 			}
 		}
 	}
