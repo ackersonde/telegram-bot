@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ackersonde/telegram-bot/commands"
+	"github.com/ackersonde/telegram-bot/utils"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -37,7 +38,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 					msg.Text = msg.Text + "`" + cmd.Command + "` " + cmd.Description + "\n"
 				}
 			case "version":
-				fingerprint := getDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
+				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
 				githubRunID := os.Getenv("GITHUB_RUN_ID")
 				msg.Text = "[" + githubRunID + "](https://github.com/ackersonde/telegram-bot/actions/runs/" +
 					githubRunID + ") using " + fingerprint
