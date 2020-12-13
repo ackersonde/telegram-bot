@@ -52,6 +52,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.Text = "[7d forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
 			case "rmls":
 				var err error
+				msg.ParseMode = "MarkdownV2"
 				msg.Text, err = commands.ShowTreeAtPath(update.Message.CommandArguments())
 				if err != nil {
 					msg.Text = err.Error()

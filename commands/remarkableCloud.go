@@ -77,11 +77,11 @@ func ShowTreeAtPath(path string) (string, error) {
 			return "Unable to find '" + path + "'", err
 		}
 		for _, e := range node.Children {
-			eType := "d"
 			if e.IsFile() {
-				eType = "f"
+				response = response + fmt.Sprintf("- \t%s\n", e.Name())
+			} else {
+				response = response + fmt.Sprintf("[%s](/rmls %s)\n", e.Name(), path+e.Name())
 			}
-			response = response + fmt.Sprintf("[%s]\t%s\n", eType, e.Name())
 		}
 	}
 
