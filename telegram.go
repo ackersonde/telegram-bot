@@ -31,7 +31,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
-				msg.ParseMode = "markdownv2"
+				msg.ParseMode = "MarkdownV2"
 
 				response := ""
 				cmds, _ := bot.GetMyCommands()
@@ -41,7 +41,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 			case "version":
-				msg.ParseMode = "markdownv2"
+				msg.ParseMode = "MarkdownV2"
 
 				fingerprint := utils.GetDeployFingerprint("/root/.ssh/id_ed25519-cert.pub")
 				githubRunID := os.Getenv("GITHUB_RUN_ID")
@@ -52,7 +52,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 				msg.Text = tgbotapi.EscapeText(msg.ParseMode, response)
 				log.Printf("escaped to: %s\n", msg.Text)
 			case "sw":
-				msg.ParseMode = "markdownv2"
+				msg.ParseMode = "MarkdownV2"
 
 				response := "[7-day forecast Schwabhausen](https://darksky.net/forecast/48.3028,11.3591/ca24/en#week)"
 
@@ -87,11 +87,9 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		if msg.Text != "" {
-			msgResp, err := bot.Send(msg)
+			_, err := bot.Send(msg)
 			if err != nil {
 				log.Printf("Unable to send msg to Telegram: %s\n", err.Error())
-			} else {
-				log.Printf("Sent msg to Telegram: %s\n", msgResp.Text)
 			}
 		}
 	}
