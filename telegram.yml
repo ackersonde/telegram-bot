@@ -32,8 +32,6 @@ spec:
       restartPolicy: Always
       imagePullSecrets:
         - name: dockerhub
-      nodeSelector:
-        traefik: proxy
       containers:
         - name: telegram-bot
           image: danackerson/telegram-bot:vg{{GITHUB_RUN_ID}}
