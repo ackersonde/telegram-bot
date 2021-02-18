@@ -114,9 +114,8 @@ func main() {
 	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	_, err = bot.SetWebhook(tgbotapi.NewWebhook(
-		"https://" + os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token))
+	webHookURL := "https://" + os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token
+	_, err = bot.SetWebhook(tgbotapi.NewWebhook(webHookURL))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,5 +137,6 @@ func main() {
 
 	go http.ListenAndServe("0.0.0.0:3000", nil)
 
+	log.Printf("Now listening on %s", webHookURL)
 	pollForMessages(bot, updates)
 }
