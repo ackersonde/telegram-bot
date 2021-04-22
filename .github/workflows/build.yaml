@@ -15,12 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
+      - env:
+          CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
+          CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
       - name: Build application and docker image
         run: |
           go get -t -d -v ./...
-          env GOOS=linux GOARCH=arm GOARM=7 go build telegram.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build telegram.go
 
-          docker run --rm --privileged multiarch/qemu-user-static:register
           docker build --compress -t danackerson/telegram-bot:vg$GITHUB_RUN_ID .
 
           docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }}
@@ -28,102 +30,58 @@ jobs:
           docker push danackerson/telegram-bot:vg$GITHUB_RUN_ID
           docker push danackerson/telegram-bot:latest
 
-      - name: Prepare K8S bundle config
+      - name: Deploy to DigitalOcean
         run: |
-          export GITHUB_RUN_ID_B64=`echo -n $GITHUB_RUN_ID | base64`
-          sed -i -e "s@{{GITHUB_RUN_ID_B64}}@$GITHUB_RUN_ID_B64@" telegram.yml
-          sed -i -e "s@{{GITHUB_RUN_ID}}@$GITHUB_RUN_ID@" telegram.yml
+          git clone https://github.com/ackersonde/digitaloceans.git
+          cd digitaloceans
+          go get -t -d -v ./...
+          go build do.go
+          cd ../
 
-          echo -n "${{ secrets.CTX_PLEX_TOKEN }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_PLEX_TOKEN_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_PLEX_TOKEN_B64}}@$CTX_PLEX_TOKEN_B64@" telegram.yml
-          #sed -i -e "s@{{CTX_PLEX_TOKEN}}@${{ secrets.CTX_PLEX_TOKEN }}@" finished_torrent.sh
+          public_ip_address=$(curl -s https://checkip.amazonaws.com)
+          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
 
-          echo -n "${{ secrets.CTX_DIGITALOCEAN_TOKEN }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_DIGITALOCEAN_TOKEN_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_DIGITALOCEAN_TOKEN_B64}}@$CTX_DIGITALOCEAN_TOKEN_B64@" telegram.yml
+          mkdir ~/.ssh
+          cat <<EOF >~/.ssh/id_rsa
+          ${{ secrets.CTX_DIGITALOCEAN_SSH_PRIVKEY }}
+          EOF
+          chmod 400 ~/.ssh/id_rsa
 
-          echo -n "${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_STELLAR_LUMENS_ADDRESS_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_STELLAR_LUMENS_ADDRESS_B64}}@$CTX_STELLAR_LUMENS_ADDRESS_B64@" telegram.yml
+          ssh -o StrictHostKeyChecking=no root@ackerson.de "\
+            mkdir my-ca || true && \
+            echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_ed25519 && \
+            chmod 600 $MY_CA/id_ed25519 && \
+            echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 --decode > $MY_CA/id_ed25519-cert.pub && \
+            chmod 600 $MY_CA/id_ed25519-cert.pub && \
+            echo "${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_rsa_pix4x && \
+            chmod 600 $MY_CA/id_rsa_pix4x && \
+            echo -n "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" > $MY_CA/remarkable_api_keys.conf && \
+            echo -n "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
+            docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
+            docker rm -f telegram-bot || true && \
+            docker run -d --restart=always \
+              -e DARKSKY_API_KEY=${{ secrets.CTX_DARKSKY_API_KEY }} \
+              -e GITHUB_RUN_ID=$GITHUB_RUN_ID \
+              -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
+              -e CTX_PLEX_TOKEN=${{ secrets.CTX_PLEX_TOKEN }} \
+              -e CTX_DIGITALOCEAN_TOKEN=${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} \
+              -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
+              -e CTX_DROPBOX_ACCESS_TOKEN=${{ secrets.CTX_DROPBOX_ACCESS_TOKEN }} \
+              -e CTX_ETHERSCAN_API_KEY=${{ secrets.CTX_ETHERSCAN_API_KEY }} \
+              -e CTX_ETHEREUM_ADDRESS_METAMASK=${{ secrets.CTX_ETHEREUM_ADDRESS_METAMASK }} \
+              -e CTX_CURRENT_PGP_FINGERPRINT=${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }} \
+              -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
+              -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
+              -e TELEGRAM_BOT_WEB_URL={{ secrets.TELEGRAM_BOT_WEB_URL }} \
+              -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
+              -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
+              -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
+              -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
+              -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
+              --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
-          echo -n "${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_CURRENT_PGP_FINGERPRINT_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_CURRENT_PGP_FINGERPRINT_B64}}@$CTX_CURRENT_PGP_FINGERPRINT_B64@" telegram.yml
-
-          echo -n "${{ secrets.CTX_ETHEREUM_ADDRESS_METAMASK }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_ETHEREUM_ADDRESS_METAMASK_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_ETHEREUM_ADDRESS_METAMASK_B64}}@$CTX_ETHEREUM_ADDRESS_METAMASK_B64@" telegram.yml
-
-          echo -n "${{ secrets.CTX_ETHERSCAN_API_KEY }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_ETHERSCAN_API_KEY_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_ETHERSCAN_API_KEY_B64}}@$CTX_ETHERSCAN_API_KEY_B64@" telegram.yml
-
-          echo -n "${{ secrets.CTX_JOIN_API_KEY }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_JOIN_API_KEY_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_JOIN_API_KEY_B64}}@$CTX_JOIN_API_KEY_B64@" telegram.yml
-
-          echo -n "${{ secrets.CTX_VPNC_GATEWAY }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_VPNC_GATEWAY_B64=`cat .base64_enc`
-          sed -i -e "s@{{CTX_VPNC_GATEWAY_B64}}@$CTX_VPNC_GATEWAY_B64@" telegram.yml
-
-          echo -n "${{ secrets.CTX_DROPBOX_ACCESS_TOKEN }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_DROPBOX_ACCESS_TOKEN_B64=`cat .base64_enc`
-
-          echo -n "${{ secrets.CTX_TELEGRAM_BOT_TOKEN }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_TELEGRAM_BOT_TOKEN_B64=`cat .base64_enc`
-
-          echo -n "${{ secrets.TELEGRAM_BOT_WEB_URL }}" | base64 | tr -d \\n > .base64_enc
-          export TELEGRAM_BOT_WEB_URL_B64=`cat .base64_enc`
-
-          echo -n "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" | base64 | tr -d \\n > .base64_enc
-          export CTX_REMARKABLE_CLOUD_API_TOKENS_B64=`cat .base64_enc`
-
-          echo -n "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" | base64 | tr -d \\n > .base64_enc
-          export REMARKABLE_SSH_HOST_KEY_B64=`cat .base64_enc`
-          rm .base64_enc
-
-          sed -i -e "s@{{TELEGRAM_BOT_WEB_URL}}@${{ secrets.TELEGRAM_BOT_WEB_URL }}@" telegram.yml
-          sed -i -e "s@{{CTX_TELEGRAM_BOT_TOKEN}}@${{ secrets.CTX_TELEGRAM_BOT_TOKEN }}@" telegram.yml
-
-          sed -i -e "s@{{TELEGRAM_BOT_WEB_URL_B64}}@$TELEGRAM_BOT_WEB_URL_B64@" telegram.yml
-          sed -i -e "s@{{CTX_TELEGRAM_BOT_TOKEN_B64}}@$CTX_TELEGRAM_BOT_TOKEN_B64@" telegram.yml
-
-          sed -i -e "s@{{CTX_DROPBOX_ACCESS_TOKEN_B64}}@$CTX_DROPBOX_ACCESS_TOKEN_B64@" telegram.yml
-
-          sed -i -e "s@{{CTX_SERVER_DEPLOY_SECRET_B64}}@${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}@" telegram.yml
-          sed -i -e "s@{{CTX_SERVER_DEPLOY_CACERT_B64}}@${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}@" telegram.yml
-          sed -i -e "s@{{CTX_POPS4XL_SCP_KEY_SECRET_B64}}@${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}@" telegram.yml
-
-          sed -i -e "s@{{CTX_REMARKABLE_CLOUD_API_TOKENS_B64}}@$CTX_REMARKABLE_CLOUD_API_TOKENS_B64@" telegram.yml
-          sed -i -e "s@{{REMARKABLE_SSH_HOST_KEY_B64}}@$REMARKABLE_SSH_HOST_KEY_B64@" telegram.yml
-
-      - name: Create wireguard tunnel configuration
-        run: |
-          sudo apt-get install wireguard resolvconf
-          echo "${{ secrets.CTX_WIREGUARD_GITHUB_ACTIONS_CLIENT_CONFIG }}" | sudo tee /etc/wireguard/tunnel.conf
-
-      - name: Prepare ssh key for remote login
-        run: |
-          mkdir ~/.ssh/
-          echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 -d > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 -d > ~/.ssh/id_ed25519-cert.pub
-
-      - name: Deploy to K8S
-        env:
-          SSH_CXN: ${{ secrets.CTX_K8S_SSH_USER }}@${{ secrets.CTX_K8S_SSH_HOST }}
-        run: |
-          ssh-keygen -L -f ~/.ssh/id_ed25519-cert.pub
-          wg-quick up tunnel
-
-          scp -o StrictHostKeyChecking=no telegram.yml $SSH_CXN:~/k3s/
-          # TODO: `k delete -f k3s/telegram.yaml` forces SECRETS update
-          ssh $SSH_CXN -- "sudo kubectl apply -f k3s/telegram.yml"
-
-          wg-quick down tunnel
-
-          rm -Rf ~/.ssh
+          rm -Rf ~/.ssh /tmp/new_digital_ocean_droplet_params ~/.docker/config.json
+          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
           curl \
           --data parse_mode=HTML \

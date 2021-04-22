@@ -1,4 +1,4 @@
-FROM multiarch/alpine:arm64-latest-stable
+FROM alpine:latest
 RUN apk --no-cache add curl openssh-client ca-certificates tzdata
 
 # Set local time (for cronjob sense)
