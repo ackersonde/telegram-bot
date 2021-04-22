@@ -26,7 +26,6 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build telegram.go
 
           docker build --compress -t danackerson/telegram-bot:vg$GITHUB_RUN_ID .
-
           docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }}
           docker tag danackerson/telegram-bot:vg$GITHUB_RUN_ID danackerson/telegram-bot:latest
           docker push danackerson/telegram-bot:vg$GITHUB_RUN_ID
@@ -74,7 +73,7 @@ jobs:
               -e CTX_CURRENT_PGP_FINGERPRINT=${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }} \
               -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
               -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
-              -e TELEGRAM_BOT_WEB_URL={{ secrets.TELEGRAM_BOT_WEB_URL }} \
+              -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
               -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
               -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
               -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
