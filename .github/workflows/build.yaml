@@ -86,7 +86,8 @@ jobs:
           chmod u+x ~/deploy_telegram.sh
 
           scp -o StrictHostKeyChecking=no ~/deploy_telegram.sh root@ackerson.de:~/
-          ssh root@ackerson.de ./deploy_telegram.sh && rm ./deploy_telegram.sh
+          ssh root@ackerson.de ./deploy_telegram.sh
+          ssh root@ackerson.de rm ./deploy_telegram.sh
 
           rm -Rf ~/.ssh /tmp/new_digital_ocean_droplet_params ~/.docker/config.json
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
