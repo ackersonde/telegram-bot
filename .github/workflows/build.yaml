@@ -12,12 +12,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    env:
+      CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
+      CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
-      - env:
-          CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
-          CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
       - name: Build application and docker image
         run: |
           go get -t -d -v ./...
