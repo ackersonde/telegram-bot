@@ -57,7 +57,6 @@ jobs:
             echo "${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_rsa_pix4x && \
             chmod 600 $MY_CA/id_rsa_pix4x && \
             echo -n "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" > $MY_CA/remarkable_api_keys.conf && \
-            echo -n "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
             docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
             docker rm -f telegram-bot || true && \
             docker run -d --restart=always \
@@ -74,10 +73,6 @@ jobs:
               -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
               -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
               -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
-              -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
-              -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
-              -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
-              -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
               -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
               --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
