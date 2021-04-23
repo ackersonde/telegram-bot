@@ -57,7 +57,7 @@ jobs:
             chmod 600 $MY_CA/id_ed25519-cert.pub && \
             echo "${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_rsa_pix4x && \
             chmod 600 $MY_CA/id_rsa_pix4x && \
-            printf "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" > $MY_CA/remarkable_api_keys.conf && \
+            echo "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS_B64 }}" | base64 --decode > $MY_CA/remarkable_api_keys.conf && \
             echo "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
             docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
             docker rm -f telegram-bot || true && \
