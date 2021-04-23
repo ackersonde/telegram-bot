@@ -81,6 +81,10 @@ jobs:
             -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
             -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
             -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
+            --label='traefik.enable=true' \
+            --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
+            --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
+            --label='traefik.http.routers.telegram.rule=Host(\\\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\\\`)' \
             --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID
           DEPLOY_EOF
           chmod u+x ~/deploy_telegram.sh
