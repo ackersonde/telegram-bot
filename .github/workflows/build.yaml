@@ -75,11 +75,12 @@ jobs:
               -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
               -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
               -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
+              -e RMAPI_TRACE=1 \
               -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
               -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
               -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
               -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
-              -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
+              -v $MY_CA/remarkable_api_keys.conf:/root/.rmapi \
               --label='traefik.enable=true' \
               --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
               --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
@@ -89,7 +90,7 @@ jobs:
           rm -Rf ~/.ssh /tmp/new_digital_ocean_droplet_params ~/.docker/config.json
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
-          curl \
+          curl -s \
           --data parse_mode=HTML \
           --data disable_web_page_preview=true \
           --data chat_id=${{ secrets.TELEGRAM_GROUP_CHAT }} \
