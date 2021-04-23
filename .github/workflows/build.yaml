@@ -49,48 +49,42 @@ jobs:
           EOF
           chmod 400 ~/.ssh/id_rsa
 
-          cat <<DEPLOY_EOF >~/deploy_telegram.sh
-          #!/bin/bash
-          mkdir $MY_CA || true && \
-          echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_ed25519 && \
-          chmod 600 $MY_CA/id_ed25519 && \
-          echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 --decode > $MY_CA/id_ed25519-cert.pub && \
-          chmod 600 $MY_CA/id_ed25519-cert.pub && \
-          echo "${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_rsa_pix4x && \
-          chmod 600 $MY_CA/id_rsa_pix4x && \
-          echo -n "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" > $MY_CA/remarkable_api_keys.conf && \
-          echo -n "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
-          docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
-          docker rm -f telegram-bot || true && \
-          docker run -d --restart=always \
-            -e DARKSKY_API_KEY=${{ secrets.CTX_DARKSKY_API_KEY }} \
-            -e GITHUB_RUN_ID=$GITHUB_RUN_ID \
-            -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
-            -e CTX_PLEX_TOKEN=${{ secrets.CTX_PLEX_TOKEN }} \
-            -e CTX_DIGITALOCEAN_TOKEN=${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} \
-            -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
-            -e CTX_DROPBOX_ACCESS_TOKEN=${{ secrets.CTX_DROPBOX_ACCESS_TOKEN }} \
-            -e CTX_ETHERSCAN_API_KEY=${{ secrets.CTX_ETHERSCAN_API_KEY }} \
-            -e CTX_ETHEREUM_ADDRESS_METAMASK=${{ secrets.CTX_ETHEREUM_ADDRESS_METAMASK }} \
-            -e CTX_CURRENT_PGP_FINGERPRINT=${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }} \
-            -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
-            -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
-            -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
-            -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
-            -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
-            -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
-            -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
-            -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
-            --label='traefik.enable=true' \
-            --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
-            --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
-            --label='traefik.http.routers.telegram.rule=Host(\\\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\\\`)' \
-            --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID
-          DEPLOY_EOF
-          chmod u+x ~/deploy_telegram.sh
-
-          scp -o StrictHostKeyChecking=no ~/deploy_telegram.sh root@ackerson.de:~/
-          ssh root@ackerson.de -- "./deploy_telegram.sh; rm ./deploy_telegram.sh"
+          ssh -o StrictHostKeyChecking=no root@ackerson.de "\
+            mkdir $MY_CA || true && \
+            echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_ed25519 && \
+            chmod 600 $MY_CA/id_ed25519 && \
+            echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 --decode > $MY_CA/id_ed25519-cert.pub && \
+            chmod 600 $MY_CA/id_ed25519-cert.pub && \
+            echo "${{ secrets.CTX_POPS4XL_SCP_KEY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_rsa_pix4x && \
+            chmod 600 $MY_CA/id_rsa_pix4x && \
+            echo -e "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS }}" > $MY_CA/remarkable_api_keys.conf && \
+            echo "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
+            docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
+            docker rm -f telegram-bot || true && \
+            docker run -d --restart=always \
+              -e DARKSKY_API_KEY=${{ secrets.CTX_DARKSKY_API_KEY }} \
+              -e GITHUB_RUN_ID=$GITHUB_RUN_ID \
+              -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
+              -e CTX_PLEX_TOKEN=${{ secrets.CTX_PLEX_TOKEN }} \
+              -e CTX_DIGITALOCEAN_TOKEN=${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} \
+              -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
+              -e CTX_DROPBOX_ACCESS_TOKEN=${{ secrets.CTX_DROPBOX_ACCESS_TOKEN }} \
+              -e CTX_ETHERSCAN_API_KEY=${{ secrets.CTX_ETHERSCAN_API_KEY }} \
+              -e CTX_ETHEREUM_ADDRESS_METAMASK=${{ secrets.CTX_ETHEREUM_ADDRESS_METAMASK }} \
+              -e CTX_CURRENT_PGP_FINGERPRINT=${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }} \
+              -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
+              -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
+              -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
+              -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
+              -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
+              -v $MY_CA/id_rsa_pix4x:/root/.ssh/id_rsa_pix4x:ro \
+              -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
+              -v $MY_CA/remarkable_api_keys.conf:/root/.ssh/rmapi.conf:ro \
+              --label='traefik.enable=true' \
+              --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
+              --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
+              --label='traefik.http.routers.telegram.rule=Host(\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\`) && Path(\`/${{secrets.CTX_TELEGRAM_BOT_TOKEN}}\`)' \
+              --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
           rm -Rf ~/.ssh /tmp/new_digital_ocean_droplet_params ~/.docker/config.json
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address

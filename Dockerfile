@@ -1,4 +1,5 @@
 FROM alpine:latest
+EXPOSE 3000
 RUN apk --no-cache add curl openssh-client ca-certificates tzdata
 
 # Set local time (for cronjob sense)
