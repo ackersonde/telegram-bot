@@ -80,8 +80,9 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
 			resp, err := bot.Send(msg)
 
-			if err == nil && update.Message.Document.MimeType == "application/pdf" { // || "application/epub" ?
-				msg.Text = commands.UploadTelegramPDF2RemarkableCloud(bot, update.Message.Document)
+			if err == nil && (update.Message.Document.MimeType == "application/pdf" ||
+				update.Message.Document.MimeType == "application/epub") {
+				msg.Text = commands.UploadTelegramPDFEPUB2RemarkableCloud(bot, update.Message.Document)
 				edit := tgbotapi.EditMessageTextConfig{
 					BaseEdit: tgbotapi.BaseEdit{
 						ChatID:    chatID,

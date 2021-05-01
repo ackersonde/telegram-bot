@@ -34,8 +34,8 @@ func getRemarkableAPICtx() *api.ApiCtx {
 	return ctx
 }
 
-// UploadTelegramPDF2RemarkableCloud is now commented
-func UploadTelegramPDF2RemarkableCloud(bot *tgbotapi.BotAPI,
+// UploadTelegramPDFEPUB2RemarkableCloud is now commented
+func UploadTelegramPDFEPUB2RemarkableCloud(bot *tgbotapi.BotAPI,
 	telegramDocument *tgbotapi.Document) string {
 	response := "Unable to upload doc to Remarkable Cloud"
 	uploadDir := "telegram_files"
