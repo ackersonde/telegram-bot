@@ -80,18 +80,20 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			msg.Text = commands.StoreTelegramFile(bot, update.Message.Document)
 			resp, err := bot.Send(msg)
 
-			if err == nil && (update.Message.Document.MimeType == "application/pdf" ||
-				update.Message.Document.MimeType == "application/epub") {
-				msg.Text = commands.UploadTelegramPDFEPUB2RemarkableCloud(bot, update.Message.Document)
-				edit := tgbotapi.EditMessageTextConfig{
-					BaseEdit: tgbotapi.BaseEdit{
-						ChatID:    chatID,
-						MessageID: resp.MessageID,
-					},
-					Text: msg.Text,
+			if err == nil {
+				switch update.Message.Document.MimeType {
+				case "application/pdf", "application/epub", "application/epub+zip":
+					msg.Text = commands.UploadTelegramPDFEPUB2RemarkableCloud(bot, update.Message.Document)
+					edit := tgbotapi.EditMessageTextConfig{
+						BaseEdit: tgbotapi.BaseEdit{
+							ChatID:    chatID,
+							MessageID: resp.MessageID,
+						},
+						Text: msg.Text,
+					}
+					bot.Send(edit)
+					msg.Text = ""
 				}
-				bot.Send(edit)
-				msg.Text = ""
 			}
 		} else if strings.ToLower(update.Message.Text) == "help" {
 			msg.Text = "This bot responds only to commands - try /help"
