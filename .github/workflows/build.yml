@@ -87,7 +87,7 @@ jobs:
               --label='traefik.http.routers.telegram.rule=Host(\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\`) && Path(\`/${{secrets.CTX_TELEGRAM_BOT_TOKEN}}\`)' \
               --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
-          rm -Rf ~/.ssh /tmp/new_digital_ocean_droplet_params ~/.docker/config.json
+          rm -Rf ~/.ssh ~/.docker/config.json
           ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
 
           curl -s \
