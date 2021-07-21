@@ -86,6 +86,7 @@ jobs:
               -v $MY_CA/remarkable_host_key:/root/.ssh/known_hosts:ro \
               -v $MY_CA/remarkable_api_keys.conf:/root/.rmapi \
               --label='traefik.enable=true' \
+              --label='traefik.http.routers.telegram.middlewares=secHeaders@file' \
               --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
               --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
               --label='traefik.http.routers.telegram.rule=Host(\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\`) && Path(\`/${{secrets.CTX_TELEGRAM_BOT_TOKEN}}\`)' \
