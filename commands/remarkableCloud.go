@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/juruen/rmapi/api"
 	"github.com/juruen/rmapi/log"
 	"github.com/juruen/rmapi/model"

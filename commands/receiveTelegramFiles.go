@@ -4,22 +4,23 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // StoreTelegramFile is now commented
 func StoreTelegramFile(bot *tgbotapi.BotAPI, document *tgbotapi.Document) string {
-	response := "Sorry, I couldn't download your file."
+	response := "Sorry, I couldn't get your file."
 
 	downloadURL, err := bot.GetFileDirectURL(document.FileID)
 	if err != nil {
-		response = fmt.Sprintf("couldn't get file URL: %s", err.Error())
+		log.Printf("couldn't get file URL: %s", err.Error())
 	} else {
-		response = fmt.Sprintf("Attempting to download: %s", downloadURL)
+		log.Printf("Attempting to download: %s", downloadURL)
 	}
 	err = downloadFile(downloadURL, document.FileName)
 	if err != nil {

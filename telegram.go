@@ -9,17 +9,19 @@ import (
 
 	"github.com/ackersonde/telegram-bot/commands"
 	"github.com/ackersonde/telegram-bot/utils"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
-	var myCommands = []tgbotapi.BotCommand{
-		{Command: "help", Description: "show this list"},
-		{Command: "version", Description: "which version am I?"},
-		{Command: "sw", Description: "7d forecast schwabhausen"},
-		{Command: "rmls", Description: "list contents of remarkable"},
+	setCommands := tgbotapi.NewSetMyCommands(
+		tgbotapi.BotCommand{Command: "help", Description: "show this list"},
+		tgbotapi.BotCommand{Command: "version", Description: "which version am I?"},
+		tgbotapi.BotCommand{Command: "sw", Description: "7d forecast schwabhausen"},
+		tgbotapi.BotCommand{Command: "rmls", Description: "list contents of remarkable"})
+
+	if _, err := bot.Request(setCommands); err != nil {
+		log.Printf("Unable to set commands: %s\n", err.Error())
 	}
-	bot.SetMyCommands(myCommands)
 
 	for update := range updates {
 		if update.Message == nil {
@@ -118,10 +120,17 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	webHookURL := "https://" + os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token
-	_, err = bot.SetWebhook(tgbotapi.NewWebhook(webHookURL))
+
+	wh, err := tgbotapi.NewWebhook(webHookURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = bot.Request(wh)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	info, err := bot.GetWebhookInfo()
 	if err != nil {
 		log.Fatal(err)
