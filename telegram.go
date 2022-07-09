@@ -111,7 +111,7 @@ func pollForMessages(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 }
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("CTX_TELEGRAM_BOT_TOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("ORG_TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func main() {
 	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-	webHookURL := "https://" + os.Getenv("TELEGRAM_BOT_WEB_URL") + "/" + bot.Token
+	webHookURL := "https://" + os.Getenv("ORG_TELEGRAM_BOT_WEB_URL") + "/" + bot.Token
 
 	wh, err := tgbotapi.NewWebhook(webHookURL)
 	if err != nil {

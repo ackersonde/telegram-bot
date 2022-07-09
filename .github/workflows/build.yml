@@ -13,9 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     env:
-      CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN: ${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }}
-      CTX_DIGITALOCEAN_FIREWALL: ${{ secrets.CTX_DIGITALOCEAN_FIREWALL }}
-      CTX_SSH_DEPLOY_FINGERPRINT: ${{ secrets.CTX_SSH_DEPLOY_FINGERPRINT }}
       MY_CA: /root/my-ca
     steps:
       - uses: actions/checkout@v2
@@ -29,13 +26,18 @@ jobs:
 
           docker build --compress -t danackerson/telegram-bot:vg$GITHUB_RUN_ID .
 
-          docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }}
+          export DUSER=$(echo ${{ secrets.ORG_DOCKER_USER }} | base64 -d)
+          export DPASS=$(echo ${{ secrets.ORG_DOCKER_PASS }} | base64 -d)
+          docker login -u $DUSER -p $DPASS
+
           docker tag danackerson/telegram-bot:vg$GITHUB_RUN_ID danackerson/telegram-bot:latest
           docker push danackerson/telegram-bot:vg$GITHUB_RUN_ID
           docker push danackerson/telegram-bot:latest
 
       - name: Deploy to DigitalOcean
         run: |
+          export CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN=$(echo ${{ secrets.ORG_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} | base64 -d)
+          export CTX_DIGITALOCEAN_FIREWALL=$(echo ${{ secrets.ORG_DIGITALOCEAN_FIREWALL }} | base64 -d)
           git clone https://github.com/ackersonde/digitaloceans.git
           cd digitaloceans
           go get -t -d -v ./...
@@ -47,31 +49,34 @@ jobs:
 
           mkdir ~/.ssh
           cat <<EOF >~/.ssh/id_rsa
-          ${{ secrets.CTX_DIGITALOCEAN_SSH_PRIVKEY }}
+          $(echo ${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }} | base64 -d)
           EOF
           chmod 400 ~/.ssh/id_rsa
 
+          export ORG_ETHERSCAN_API_KEY=$(echo ${{ secrets.ORG_ETHERSCAN_API_KEY }} | base64 -d)
+          export ORG_ETHEREUM_ADDRESS_METAMASK=${{ secrets.ORG_ETHEREUM_ADDRESS_METAMASK }} | base64 -d)
+          export ORG_CURRENT_PGP_FINGERPRINT=${{ secrets.ORG_CURRENT_PGP_FINGERPRINT }} | base64 -d)
+          export ORG_STELLAR_LUMENS_ADDRESS=${{ secrets.ORG_STELLAR_LUMENS_ADDRESS }} | base64 -d)
+          export ORG_TELEGRAM_BOT_TOKEN=${{ secrets.ORG_TELEGRAM_BOT_TOKEN }} | base64 -d)
+          export ORG_TELEGRAM_BOT_WEB_URL=${{ secrets.ORG_TELEGRAM_BOT_WEB_URL }} | base64 -d)
+
           ssh -o StrictHostKeyChecking=no root@ackerson.de "\
             mkdir $MY_CA || true && \
-            echo "${{ secrets.CTX_SERVER_DEPLOY_SECRET_B64 }}" | base64 --decode > $MY_CA/id_ed25519 && \
+            echo "${{ secrets.ORG_SERVER_DEPLOY_SECRET }}" | base64 --decode > $MY_CA/id_ed25519 && \
             chmod 600 $MY_CA/id_ed25519 && \
-            echo "${{ secrets.CTX_SERVER_DEPLOY_CACERT_B64 }}" | base64 --decode > $MY_CA/id_ed25519-cert.pub && \
+            echo "${{ secrets.ORG_SERVER_DEPLOY_CACERT }}" | base64 --decode > $MY_CA/id_ed25519-cert.pub && \
             chmod 600 $MY_CA/id_ed25519-cert.pub && \
-            echo "${{ secrets.CTX_REMARKABLE_CLOUD_API_TOKENS_B64 }}" | base64 --decode > $MY_CA/remarkable_api_keys.conf && \
-            echo "${{ secrets.REMARKABLE_SSH_HOST_KEY }}" > $MY_CA/remarkable_host_key && \
-            docker login -u ${{ secrets.CTX_DOCKER_USER }} -p ${{ secrets.CTX_DOCKER_PASS }} && \
+            echo "${{ secrets.ORG_REMARKABLE_CLOUD_API_TOKENS }}" | base64 --decode > $MY_CA/remarkable_api_keys.conf && \
+            echo "${{ secrets.ORG_REMARKABLE_SSH_HOST_KEY }}" | base64 --decode > $MY_CA/remarkable_host_key && \
             docker rm -f telegram-bot || true && \
             docker run -d --restart=always \
-              -e DARKSKY_API_KEY=${{ secrets.CTX_DARKSKY_API_KEY }} \
               -e GITHUB_RUN_ID=$GITHUB_RUN_ID \
-              -e CTX_JOIN_API_KEY=${{ secrets.CTX_JOIN_API_KEY }} \
-              -e CTX_DIGITALOCEAN_TOKEN=${{ secrets.CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} \
-              -e CTX_ETHERSCAN_API_KEY=${{ secrets.CTX_ETHERSCAN_API_KEY }} \
-              -e CTX_ETHEREUM_ADDRESS_METAMASK=${{ secrets.CTX_ETHEREUM_ADDRESS_METAMASK }} \
-              -e CTX_CURRENT_PGP_FINGERPRINT=${{ secrets.CTX_CURRENT_PGP_FINGERPRINT }} \
-              -e CTX_STELLAR_LUMENS_ADDRESS=${{ secrets.CTX_STELLAR_LUMENS_ADDRESS }} \
-              -e CTX_TELEGRAM_BOT_TOKEN=${{ secrets.CTX_TELEGRAM_BOT_TOKEN }} \
-              -e TELEGRAM_BOT_WEB_URL=${{ secrets.TELEGRAM_BOT_WEB_URL }} \
+              -e ORG_ETHERSCAN_API_KEY=$ORG_ETHERSCAN_API_KEY \
+              -e ORG_ETHEREUM_ADDRESS_METAMASK=$ORG_ETHEREUM_ADDRESS_METAMASK \
+              -e ORG_CURRENT_PGP_FINGERPRINT=$ORG_CURRENT_PGP_FINGERPRINT \
+              -e ORG_STELLAR_LUMENS_ADDRESS=$ORG_STELLAR_LUMENS_ADDRESS \
+              -e ORG_TELEGRAM_BOT_TOKEN=$ORG_TELEGRAM_BOT_TOKEN \
+              -e ORG_TELEGRAM_BOT_WEB_URL=$ORG_TELEGRAM_BOT_WEB_URL \
               -e RMAPI_TRACE=0 \
               -v $MY_CA/id_ed25519:/root/.ssh/id_ed25519:ro \
               -v $MY_CA/id_ed25519-cert.pub:/root/.ssh/id_ed25519-cert.pub:ro \
@@ -81,8 +86,8 @@ jobs:
               --label='traefik.enable=true' \
               --label='traefik.http.routers.telegram.middlewares=secHeaders@file' \
               --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
-              --label='traefik.http.routers.telegram.tls.domains=${{ secrets.TELEGRAM_BOT_WEB_URL }}' \
-              --label='traefik.http.routers.telegram.rule=Host(\`${{ secrets.TELEGRAM_BOT_WEB_URL }}\`) && Path(\`/${{secrets.CTX_TELEGRAM_BOT_TOKEN}}\`)' \
+              --label='traefik.http.routers.telegram.tls.domains=$ORG_TELEGRAM_BOT_WEB_URL' \
+              --label='traefik.http.routers.telegram.rule=Host(\`$ORG_TELEGRAM_BOT_WEB_URL\`) && Path(\`/$ORG_TELEGRAM_BOT_TOKEN\`)' \
               --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
           rm -Rf ~/.ssh ~/.docker/config.json
@@ -91,6 +96,6 @@ jobs:
           curl -s \
           --data parse_mode=HTML \
           --data disable_web_page_preview=true \
-          --data chat_id=${{ secrets.TELEGRAM_GROUP_CHAT }} \
+          --data chat_id=$ORG_TELEGRAM_GROUP_CHAT \
           --data text="Deployed <a href='https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID'>$GITHUB_REPOSITORY @ $GITHUB_RUN_ID</a>" \
-          --request POST https://api.telegram.org/bot${{ secrets.CTX_TELEGRAM_BOT_TOKEN }}/sendMessage
+          --request POST https://api.telegram.org/bot$ORG_TELEGRAM_BOT_TOKEN/sendMessage
