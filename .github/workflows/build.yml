@@ -54,11 +54,12 @@ jobs:
           chmod 400 ~/.ssh/id_rsa
 
           export ORG_ETHERSCAN_API_KEY=$(echo ${{ secrets.ORG_ETHERSCAN_API_KEY }} | base64 -d)
-          export ORG_ETHEREUM_ADDRESS_METAMASK=${{ secrets.ORG_ETHEREUM_ADDRESS_METAMASK }} | base64 -d)
-          export ORG_CURRENT_PGP_FINGERPRINT=${{ secrets.ORG_CURRENT_PGP_FINGERPRINT }} | base64 -d)
-          export ORG_STELLAR_LUMENS_ADDRESS=${{ secrets.ORG_STELLAR_LUMENS_ADDRESS }} | base64 -d)
-          export ORG_TELEGRAM_BOT_TOKEN=${{ secrets.ORG_TELEGRAM_BOT_TOKEN }} | base64 -d)
-          export ORG_TELEGRAM_BOT_WEB_URL=${{ secrets.ORG_TELEGRAM_BOT_WEB_URL }} | base64 -d)
+          export ORG_ETHEREUM_ADDRESS_METAMASK=$(echo ${{ secrets.ORG_ETHEREUM_ADDRESS_METAMASK }} | base64 -d)
+          export ORG_CURRENT_PGP_FINGERPRINT=$(echo ${{ secrets.ORG_CURRENT_PGP_FINGERPRINT }} | base64 -d)
+          export ORG_STELLAR_LUMENS_ADDRESS=$(echo ${{ secrets.ORG_STELLAR_LUMENS_ADDRESS }} | base64 -d)
+          export ORG_TELEGRAM_BOT_TOKEN=$(echo ${{ secrets.ORG_TELEGRAM_BOT_TOKEN }} | base64 -d)
+          export ORG_TELEGRAM_BOT_WEB_URL=$(echo ${{ secrets.ORG_TELEGRAM_BOT_WEB_URL }} | base64 -d)
+          export ORG_TELEGRAM_GROUP_CHAT=$(echo ${{ secrets.ORG_TELEGRAM_GROUP_CHAT }} | base64 -d)
 
           ssh -o StrictHostKeyChecking=no root@ackerson.de "\
             mkdir $MY_CA || true && \
