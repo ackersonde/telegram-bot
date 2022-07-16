@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       MY_CA: /root/my-ca
     steps:
@@ -40,7 +40,7 @@ jobs:
           export CTX_DIGITALOCEAN_FIREWALL=$(echo ${{ secrets.ORG_DIGITALOCEAN_FIREWALL }} | base64 -d)
           git clone https://github.com/ackersonde/digitaloceans.git
           cd digitaloceans
-          go get -t -d -v ./...
+          go mod tidy
           go build do.go
           cd ../
 
@@ -48,9 +48,7 @@ jobs:
           ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
 
           mkdir ~/.ssh
-          cat <<EOF >~/.ssh/id_rsa
-          $(echo ${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }} | base64 -d)
-          EOF
+          echo "${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }}" | tee ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
           export ORG_ETHERSCAN_API_KEY=$(echo ${{ secrets.ORG_ETHERSCAN_API_KEY }} | base64 -d)
