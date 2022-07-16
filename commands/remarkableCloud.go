@@ -56,7 +56,7 @@ func UploadTelegramPDFEPUB2RemarkableCloud(bot *tgbotapi.BotAPI,
 			response = response + " : " + err.Error()
 		} else {
 			fileName := strings.ReplaceAll(telegramDocument.FileName, " ", "_")
-			rmDocument, err := ctx.UploadDocument(uploadDocDir.ID, os.TempDir()+"/"+fileName)
+			rmDocument, err := ctx.UploadDocument(uploadDocDir.ID, os.TempDir()+"/"+fileName, false)
 			if err != nil {
 				response = fmt.Sprintf("Upload ERR: %s", err.Error())
 			} else {
