@@ -2,7 +2,7 @@ name: Deploy telegram bot
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, hetzner ]
   workflow_dispatch:
     inputs:
       ca_pub_fingerprint:
@@ -34,21 +34,27 @@ jobs:
           docker push danackerson/telegram-bot:vg$GITHUB_RUN_ID
           docker push danackerson/telegram-bot:latest
 
-      - name: Deploy to DigitalOcean
+      - name: Deploy to Hetzner
         run: |
           export CTX_DIGITALOCEAN_DROPLET_PROXY_TOKEN=$(echo ${{ secrets.ORG_DIGITALOCEAN_DROPLET_PROXY_TOKEN }} | base64 -d)
           export CTX_DIGITALOCEAN_FIREWALL=$(echo ${{ secrets.ORG_DIGITALOCEAN_FIREWALL }} | base64 -d)
-          git clone https://github.com/ackersonde/digitaloceans.git
-          cd digitaloceans
+          export HETZNER_API_TOKEN=$(echo ${{ secrets.ORG_HETZNER_CLOUD_API_TOKEN }} | base64 -d)
+          #export HETZNER_FIREWALL=$(echo ${{ secrets.ORG_HETZNER_HOME_FIREWALL }} | base64 -d)
+          #export HETZNER_VAULT_VOLUME_ID=$(echo ${{ secrets.ORG_HETZNER_VAULT_VOLUME_ID }} | base64 -d)
+
+          git clone https://github.com/ackersonde/hetzner_home.git
+          cd hetzner_home
           go mod tidy
-          go build do.go
+          go build hetzner.go
           cd ../
 
           public_ip_address=$(curl -s https://checkip.amazonaws.com)
-          ./digitaloceans/do -fn=firewallSSH -allow=true -ip=$public_ip_address -tag=traefik
+          ./hetzner_home/hetzner -fn=firewallSSH -tag=homepage -ip=$public_ip_address
 
           mkdir ~/.ssh
-          echo "${{ secrets.ORG_DIGITALOCEAN_SSH_PRIVKEY }}" | tee ~/.ssh/id_rsa
+          cat <<EOF >~/.ssh/id_rsa
+          $(echo ${{ secrets.HETZNER_SSH_PRIVKEY }} | base64 -d)
+          EOF
           chmod 400 ~/.ssh/id_rsa
 
           export ORG_ETHERSCAN_API_KEY=$(echo ${{ secrets.ORG_ETHERSCAN_API_KEY }} | base64 -d)
@@ -90,7 +96,7 @@ jobs:
               --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
 
           rm -Rf ~/.ssh ~/.docker/config.json
-          ./digitaloceans/do -fn=firewallSSH -allow=false -ip=$public_ip_address
+          ./hetzner_home/hetzner -fn=cleanupDeploy -tag=homepage
 
           curl -s \
           --data parse_mode=HTML \
