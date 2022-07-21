@@ -65,7 +65,7 @@ jobs:
           export ORG_TELEGRAM_BOT_WEB_URL=$(echo ${{ secrets.ORG_TELEGRAM_BOT_WEB_URL }} | base64 -d)
           export ORG_TELEGRAM_GROUP_CHAT=$(echo ${{ secrets.ORG_TELEGRAM_GROUP_CHAT }} | base64 -d)
 
-          ssh -o StrictHostKeyChecking=no root@ackerson.de "\
+          ssh -o StrictHostKeyChecking=no root@168.119.170.94 "\
             mkdir $MY_CA || true && \
             echo "${{ secrets.ORG_SERVER_DEPLOY_SECRET }}" | base64 --decode > $MY_CA/id_ed25519 && \
             chmod 600 $MY_CA/id_ed25519 && \
