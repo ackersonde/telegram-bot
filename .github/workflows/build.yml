@@ -90,7 +90,6 @@ jobs:
               -v $MY_CA/remarkable_api_keys.conf:/root/.rmapi \
               --label='traefik.enable=true' \
               --label='traefik.http.routers.telegram.middlewares=secHeaders@file' \
-              --label='traefik.http.routers.telegram.tls.certResolver=letsencrypt' \
               --label='traefik.http.routers.telegram.tls.domains=$ORG_TELEGRAM_BOT_WEB_URL' \
               --label='traefik.http.routers.telegram.rule=Host(\`$ORG_TELEGRAM_BOT_WEB_URL\`) && Path(\`/$ORG_TELEGRAM_BOT_TOKEN\`)' \
               --name telegram-bot danackerson/telegram-bot:vg$GITHUB_RUN_ID"
